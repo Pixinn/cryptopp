@@ -1,4 +1,17 @@
 Crypto++: free C++ Class Library of Cryptographic Schemes
+
+Build and install with CMke - SEPT/18/2018
+
+$ mkdir build && cd build
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
+$ cmake --build . --config Release --target install
+
+The CMake script comes from the git submodule located in the cmake subfolder.
+
+To consume this library from a program built with CMake:
+find_package(cryptopp 6.1.0)
+target_link_libraries(... cryptopp-static) or target_link_libraries(... cryptopp-shared)
+
 Version 6.1 - FEB/22/2018
 
 Crypto++ Library is a free C++ class library of cryptographic schemes.
