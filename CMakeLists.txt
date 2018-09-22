@@ -18,6 +18,8 @@ cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
 project(cryptopp)
 
+set(CMAKE_DEBUG_POSTFIX d) # postfixing the Debug configuration
+
 # Make RelWithDebInfo the default (it does e.g. add '-O2 -g -DNDEBUG' for GNU)
 #   If not in multi-configuration environments, no explicit build type or CXX
 #   flags are set by the user and if we are the root CMakeLists.txt file.
@@ -63,6 +65,7 @@ option(DISABLE_AESNI "Disable AES-NI" OFF)
 option(DISABLE_SHA "Disable SHA" OFF)
 option(CRYPTOPP_NATIVE_ARCH "Enable native architecture" OFF)
 set(CRYPTOPP_DATA_DIR "" CACHE PATH "Crypto++ test data directory")
+
 
 #============================================================================
 # Internal compiler options
@@ -615,6 +618,8 @@ endif ()
 # Compile targets
 #============================================================================
 
+
+
 # Set global includes BEFORE adding any targets for legacy CMake versions
 if (CMAKE_VERSION VERSION_LESS 2.8.12)
 	include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
@@ -633,7 +638,7 @@ if (BUILD_STATIC)
 
 	target_include_directories(cryptopp-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/cryptopp>)
 
-	if(MSVC)
+	if(MSVC)		
 		target_compile_options(cryptopp-static PRIVATE	"/MP" "$<$<CONFIG:Debug>:/MTd>" "$<$<CONFIG:Release>:/MT>")
 	endif()
 
