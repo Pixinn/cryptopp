@@ -16,7 +16,6 @@ https://github.com/noloader/cryptopp-cmake.\n\
 
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 
-project(cryptopp)
 
 set(CMAKE_DEBUG_POSTFIX d) # postfixing the Debug configuration
 
@@ -34,6 +33,8 @@ endif ()
 set(cryptopp_VERSION_MAJOR 6)
 set(cryptopp_VERSION_MINOR 1)
 set(cryptopp_VERSION_PATCH 0)
+
+project(cryptopp VERSION ${cryptopp_VERSION_MAJOR}.${cryptopp_VERSION_MINOR}.${cryptopp_VERSION_PATCH})
 
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
@@ -636,7 +637,7 @@ if (BUILD_STATIC)
 		add_library(cryptopp-static STATIC ${cryptopp_SOURCES})
 	endif ()
 
-	target_include_directories(cryptopp-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include/cryptopp>)
+	target_include_directories(cryptopp-static PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> $<INSTALL_INTERFACE:include>)
 
 	if(MSVC)		
 		target_compile_options(cryptopp-static PRIVATE	"/MP" "$<$<CONFIG:Debug>:/MTd>" "$<$<CONFIG:Release>:/MT>")
@@ -672,11 +673,13 @@ if (NOT MSVC)
 				OUTPUT_NAME cryptopp)
 	endif ()
 endif ()
+ 
 
 # Targets, compatible with Crypto++ GNUMakefile
 if (BUILD_STATIC)
 	add_custom_target(static)
 	add_dependencies(static cryptopp-static)
+	set_target_properties(  ${PROJECT_NAME}-static PROPERTIES PUBLIC_HEADER "${cryptopp_HEADERS}" ) 
 endif ()
 if (BUILD_SHARED)
 	add_custom_target(dynamic)
@@ -797,16 +800,22 @@ endif()
 
 # Development package
 if (BUILD_STATIC)
-	install(TARGETS cryptopp-static EXPORT ${export_name} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+	install(TARGETS ${PROJECT_NAME}-static
+			EXPORT ${export_name}
+			PUBLIC_HEADER DESTINATION   ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} # defined with set_target_properties()
+            ARCHIVE DESTINATION         ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION         ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION         ${CMAKE_INSTALL_BINDIR})
 endif ()
-install(FILES ${cryptopp_HEADERS} DESTINATION include/cryptopp)
 
 # CMake Package
 if (NOT CMAKE_VERSION VERSION_LESS 2.8.8)	# CMakePackageConfigHelpers is supported from 2.8.8
 	include(CMakePackageConfigHelpers)
-	write_basic_package_version_file("${PROJECT_BINARY_DIR}/cryptopp-config-version.cmake" VERSION ${cryptopp_VERSION_MAJOR}.${cryptopp_VERSION_MINOR}.${cryptopp_VERSION_PATCH} COMPATIBILITY SameMajorVersion)
-	install(FILES cryptopp-config.cmake ${PROJECT_BINARY_DIR}/cryptopp-config-version.cmake DESTINATION "lib/cmake/cryptopp")
-	install(EXPORT ${export_name} DESTINATION "lib/cmake/cryptopp")
+	write_basic_package_version_file(${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config-version.cmake VERSION ${cryptopp_VERSION_MAJOR}.${cryptopp_VERSION_MINOR}.${cryptopp_VERSION_PATCH} COMPATIBILITY SameMajorVersion)
+	install(
+		EXPORT ${export_name}
+		FILE ${PROJECT_NAME}-config.cmake
+		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 endif ()
 
 # Tests
